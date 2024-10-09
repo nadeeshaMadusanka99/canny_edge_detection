@@ -9,6 +9,38 @@ def rgb_to_grayscale(rgb_image):
     return gray.astype(np.uint8)
 
 
+def gaussian_kernel(size, sigma=1):
+    size = int(size) // 2
+    x, y = np.mgrid[-size : size + 1, -size : size + 1]
+    normal = 1 / (2.0 * np.pi * sigma**2)
+    g = np.exp(-((x**2 + y**2) / (2.0 * sigma**2))) * normal
+    return g
+
+
+def conv2d(image, kernel):
+    m, n = kernel.shape
+    y, x = image.shape
+    y = y - m + 1
+    x = x - n + 1
+    new_image = np.zeros((y, x))
+    for i in range(y):
+        for j in range(x):
+            new_image[i][j] = np.sum(image[i : i + m, j : j + n] * kernel)
+    return new_image
+
+
+def gaussian_blur(image, kernel_size=5, sigma=1):
+    kernel = gaussian_kernel(kernel_size, sigma)
+    return conv2d(image, kernel)
+
+
+def canny_edge_detection(image):
+    # Step 1: Apply Gaussian blur
+    blurred = gaussian_blur(image)
+
+    return blurred
+
+
 def main():
     if len(sys.argv) != 2:
         print("Usage: python <script_name>.py <input_image>")
@@ -25,6 +57,11 @@ def main():
         gray_image = rgb_to_grayscale(image_array)
     else:
         gray_image = image_array
+
+    # Apply Canny edge detection
+    edges_array = canny_edge_detection(gray_image)
+
+    Image.fromarray(edges_array.astype(np.uint8)).show()
 
 
 if __name__ == "__main__":
