@@ -38,9 +38,25 @@ def gaussian_blur(image, kernel_size=5, sigma=1):
     return blurred
 
 
+def sobel_filters(img):
+    Kx = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]], np.float32)
+    Ky = np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]], np.float32)
+
+    Ix = conv2d(img, Kx)
+    Iy = conv2d(img, Ky)
+
+    G = np.hypot(Ix, Iy)
+    G = G / G.max() * 255
+    theta = np.arctan2(Iy, Ix)
+    return G, theta
+
+
 def canny_edge_detection(image):
     # Step 1: Apply Gaussian blur
     blurred = gaussian_blur(image)
+
+    # Step 2: Calculate gradients
+    gradients, theta = sobel_filters(blurred)
 
     return blurred
 
