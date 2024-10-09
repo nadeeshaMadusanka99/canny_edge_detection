@@ -90,12 +90,32 @@ def non_max_suppression(img, theta):
                 if (img[i, j] >= q) and (img[i, j] >= r):
                     output_img[i, j] = img[i, j]
                 else:
-                    output_img[i, j] = 0
+                    output_img[i, j] = 1
 
             except IndexError as e:
                 pass
 
     return output_img
+
+
+def threshold(img, low_threshold_ratio=0.05, high_thhreshold_ratio=0.09):
+    high_threshold = img.max() * high_thhreshold_ratio
+    low_threshold = high_threshold * low_threshold_ratio
+
+    M, N = img.shape
+    result = np.zeros((M, N), dtype=np.int32)
+
+    weak = np.int32(25)
+    strong = np.int32(255)
+
+    strong_i, strong_j = np.where(img >= high_threshold)
+    zeros_i, zeros_j = np.where(img < low_threshold)
+    weak_i, weak_j = np.where((img <= high_threshold) & (img >= low_threshold))
+
+    result[strong_i, strong_j] = strong
+    result[weak_i, weak_j] = weak
+
+    return result, weak, strong
 
 
 def canny_edge_detection(image):
@@ -107,6 +127,9 @@ def canny_edge_detection(image):
 
     # Step 3: Non-maximum suppression
     suppressed = non_max_suppression(gradients, theta)
+
+    # Step 4: Double thresholding
+    thresholded, weak, strong = threshold(suppressed)
 
     return suppressed
 
