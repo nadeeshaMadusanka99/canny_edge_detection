@@ -120,6 +120,31 @@ def dual_threshold(img, low_threshold_ratio=0.05, high_thhreshold_ratio=0.09):
     return result, weak, strong
 
 
+def final_edge_selection(img, weak, strong):
+    M, N = img.shape
+    for i in range(1, M - 1):
+        for j in range(1, N - 1):
+            if img[i, j] == weak:
+                try:
+                    # Check if any of the 8-connected neighbors is a strong edge
+                    if (
+                        (img[i + 1, j - 1] == strong)
+                        or (img[i + 1, j] == strong)
+                        or (img[i + 1, j + 1] == strong)
+                        or (img[i, j - 1] == strong)
+                        or (img[i, j + 1] == strong)
+                        or (img[i - 1, j - 1] == strong)
+                        or (img[i - 1, j] == strong)
+                        or (img[i - 1, j + 1] == strong)
+                    ):
+                        img[i, j] = strong
+                    else:
+                        img[i, j] = 0
+                except IndexError as e:
+                    pass
+    return img
+
+
 def canny_edge_detection(image):
     # Step 1: Apply Gaussian blur
     blurred = gaussian_blur(image)
@@ -133,7 +158,10 @@ def canny_edge_detection(image):
     # Step 4: Double thresholding
     thresholded, weak, strong = dual_threshold(suppressed)
 
-    return thresholded
+    # Step 5: Final edge selection
+    final_edges = final_edge_selection(thresholded, weak, strong)
+
+    return final_edges
 
 
 def main():
