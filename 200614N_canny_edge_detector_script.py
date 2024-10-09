@@ -184,7 +184,11 @@ def main():
     # Apply Canny edge detection
     edges_array = canny_edge_detection(gray_image)
 
-    Image.fromarray(edges_array.astype(np.uint8)).show()
+    # Image.fromarray(edges_array.astype(np.uint8)).show()
+
+    # Save the result
+    Image.fromarray(edges_array.astype(np.uint8)).save(output_name)
+    print(f"Canny edge detection complete. Result saved as {output_name}")
 
 
 if __name__ == "__main__":
