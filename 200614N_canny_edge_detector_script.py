@@ -11,10 +11,12 @@ def rgb_to_grayscale(rgb_image):
 
 def gaussian_kernel(size, sigma=1):
     size = int(size) // 2
+    # Create a 2D Gaussian kernel
     x, y = np.mgrid[-size : size + 1, -size : size + 1]
+    # Calculate the normalizing constant
     normal = 1 / (2.0 * np.pi * sigma**2)
-    g = np.exp(-((x**2 + y**2) / (2.0 * sigma**2))) * normal
-    return g
+    kernel = np.exp(-((x**2 + y**2) / (2.0 * sigma**2))) * normal
+    return kernel
 
 
 def conv2d(image, kernel):
@@ -23,6 +25,7 @@ def conv2d(image, kernel):
     y = y - m + 1
     x = x - n + 1
     new_image = np.zeros((y, x))
+    # Perform 2D convolution
     for i in range(y):
         for j in range(x):
             new_image[i][j] = np.sum(image[i : i + m, j : j + n] * kernel)
@@ -31,7 +34,8 @@ def conv2d(image, kernel):
 
 def gaussian_blur(image, kernel_size=5, sigma=1):
     kernel = gaussian_kernel(kernel_size, sigma)
-    return conv2d(image, kernel)
+    blurred = conv2d(image, kernel)
+    return blurred
 
 
 def canny_edge_detection(image):
