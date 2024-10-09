@@ -98,7 +98,7 @@ def non_max_suppression(img, theta):
     return output_img
 
 
-def threshold(img, low_threshold_ratio=0.05, high_thhreshold_ratio=0.09):
+def dual_threshold(img, low_threshold_ratio=0.05, high_thhreshold_ratio=0.09):
     high_threshold = img.max() * high_thhreshold_ratio
     low_threshold = high_threshold * low_threshold_ratio
 
@@ -108,10 +108,12 @@ def threshold(img, low_threshold_ratio=0.05, high_thhreshold_ratio=0.09):
     weak = np.int32(25)
     strong = np.int32(255)
 
+    # Apply double thresholding
     strong_i, strong_j = np.where(img >= high_threshold)
     zeros_i, zeros_j = np.where(img < low_threshold)
     weak_i, weak_j = np.where((img <= high_threshold) & (img >= low_threshold))
 
+    # Set weak and strong edges in the image
     result[strong_i, strong_j] = strong
     result[weak_i, weak_j] = weak
 
@@ -129,9 +131,9 @@ def canny_edge_detection(image):
     suppressed = non_max_suppression(gradients, theta)
 
     # Step 4: Double thresholding
-    thresholded, weak, strong = threshold(suppressed)
+    thresholded, weak, strong = dual_threshold(suppressed)
 
-    return suppressed
+    return thresholded
 
 
 def main():
