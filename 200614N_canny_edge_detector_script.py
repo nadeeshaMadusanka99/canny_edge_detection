@@ -39,24 +39,30 @@ def gaussian_blur(image, kernel_size=5, sigma=1):
 
 
 def sobel_filters(img):
+    # Sobel kernels
     Kx = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]], np.float32)
     Ky = np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]], np.float32)
 
+    # Convolve kernels with image
     Ix = conv2d(img, Kx)
     Iy = conv2d(img, Ky)
 
+    # Calculate gradient magnitude and direction
     G = np.hypot(Ix, Iy)
+    # Normalize gradient values to 0-255
     G = G / G.max() * 255
     theta = np.arctan2(Iy, Ix)
     return G, theta
 
 
-def non_max_suppression(img, D):
+def non_max_suppression(img, theta):
+    # Get image dimensions and angles in degrees
     M, N = img.shape
-    Z = np.zeros((M, N), dtype=np.int32)
-    angle = D * 180.0 / np.pi
+    output_img = np.zeros((M, N), dtype=np.int32)
+    angle = theta * 180.0 / np.pi
     angle[angle < 0] += 180
 
+    # Perform non-maximum suppression
     for i in range(1, M - 1):
         for j in range(1, N - 1):
             try:
@@ -65,30 +71,31 @@ def non_max_suppression(img, D):
 
                 # angle 0
                 if (0 <= angle[i, j] < 22.5) or (157.5 <= angle[i, j] <= 180):
-                    q = img[i, j + 1]
-                    r = img[i, j - 1]
+                    q = img[i, j + 1]  # Right pixel
+                    r = img[i, j - 1]  # Left pixel
                 # angle 45
                 elif 22.5 <= angle[i, j] < 67.5:
-                    q = img[i + 1, j - 1]
-                    r = img[i - 1, j + 1]
+                    q = img[i + 1, j - 1]  # Bottom-left pixel
+                    r = img[i - 1, j + 1]  # Top-right pixel
                 # angle 90
                 elif 67.5 <= angle[i, j] < 112.5:
-                    q = img[i + 1, j]
-                    r = img[i - 1, j]
+                    q = img[i + 1, j]  # Bottom pixel
+                    r = img[i - 1, j]  # Top pixel
                 # angle 135
                 elif 112.5 <= angle[i, j] < 157.5:
-                    q = img[i - 1, j - 1]
-                    r = img[i + 1, j + 1]
+                    q = img[i - 1, j - 1]  # Bottom-right pixel
+                    r = img[i + 1, j + 1]  # Top-left pixel
 
+                # Suppress non-maximum pixels
                 if (img[i, j] >= q) and (img[i, j] >= r):
-                    Z[i, j] = img[i, j]
+                    output_img[i, j] = img[i, j]
                 else:
-                    Z[i, j] = 0
+                    output_img[i, j] = 0
 
             except IndexError as e:
                 pass
 
-    return Z
+    return output_img
 
 
 def canny_edge_detection(image):
